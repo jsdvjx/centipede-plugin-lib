@@ -1,7 +1,4 @@
-package ke.bb.listener
-
-import androidx.test.uiautomator.UiObject
-
+package ke.bb.plugins
 
 data class Rect(
     val left: Int,
@@ -26,30 +23,7 @@ data class Node(
     val checked: Boolean,
     val enabled: Boolean,
     val packageName: String
-){
-
-    companion object {
-        fun from(node: UiObject): Node {
-            return Node(
-                text = node.text,
-                description = node.contentDescription,
-                rect = Rect(
-                    left = node.bounds.left,
-                    top = node.bounds.top,
-                    right = node.bounds.right,
-                    bottom = node.bounds.bottom
-                ),
-                className = node.className,
-                clickable = node.isClickable(),
-                checkable = node.isCheckable(),
-                checked = node.isChecked(),
-                enabled = node.isEnabled(),
-                packageName = node.packageName
-            )
-        }
-    }
-}
-
+)
 data class ProcessInfo(
     val uid: Int,
     val pid: Int,

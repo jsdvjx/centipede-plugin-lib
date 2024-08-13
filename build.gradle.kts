@@ -11,6 +11,7 @@ repositories {
 
 dependencies {
     testImplementation(kotlin("test"))
+    compileOnly("com.caoccao.javet:javet:3.1.4")
 }
 
 tasks.test {
