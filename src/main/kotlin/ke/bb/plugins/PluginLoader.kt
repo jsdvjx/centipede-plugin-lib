@@ -64,7 +64,6 @@ class PluginBridge(
     }
 
     fun run(ctx: MutableMap<String, Any>, drive: IDrive) {
-        lastRunning = System.currentTimeMillis() / 1000
         instance.invokeVoid("run", ctx, drive)
 
     }
@@ -73,15 +72,20 @@ class PluginBridge(
         if (System.currentTimeMillis() / 1000 - lastRunning < cooldown) {
             return false
         }
-        return instance.invokeBoolean("activate", ctx, drive)
+        return instance.invokeBoolean("activate", ctx, drive).apply {
+            lastRunning = System.currentTimeMillis() / 1000
+        }
     }
 }
 
 class PluginExecutor(
     private val drives: Map<String, List<IDrive>>,
-    private val pluginSourceDir: String,
-    private val localPath: String
+    private val syncDir: String,
+    private val type: PluginBridge.PluginType = PluginBridge.PluginType.CENTI
+
 ) {
+    private val pluginSourceDir: String = "$syncDir/scripts"
+    private val localPath: String = "$syncDir/apks"
     private val runtime = V8Host.getNodeInstance().createV8Runtime<NodeRuntime>().apply {
         converter = JavetProxyConverter()
     }
@@ -94,7 +98,7 @@ class PluginExecutor(
                 }
             } else emptyList())
                 .sortedBy { it.priority }
-                .filter { it.type == PluginBridge.PluginType.CENTI }
+                .filter { it.type == type }
         }
     }
 

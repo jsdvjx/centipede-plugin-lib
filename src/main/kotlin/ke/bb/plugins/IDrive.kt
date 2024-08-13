@@ -59,4 +59,5 @@ interface IDrive {
     fun unlock()
     fun installApp(path: String)
     fun shell(cmd: String): String
+    fun push(local: String, remote: String)
 }

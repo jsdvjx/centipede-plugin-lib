@@ -10,7 +10,7 @@ publishing{
         create<MavenPublication>("mavenJava"){
             groupId = "ke.bb"
             artifactId = "plugins"
-            version = "0.1.2"
+            version = "0.1.3"
             from(components["kotlin"])
         }
     }
