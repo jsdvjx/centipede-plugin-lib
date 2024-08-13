@@ -5,7 +5,16 @@ plugins {
 
 group = "ke.bb"
 version = "1.0-SNAPSHOT"
-
+publishing{
+    publications{
+        create<MavenPublication>("mavenJava"){
+            groupId = "ke.bb"
+            artifactId = "plugins"
+            version = "0.1.2"
+            from(components["kotlin"])
+        }
+    }
+}
 repositories {
     mavenCentral()
 }
