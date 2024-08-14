@@ -58,6 +58,7 @@ interface IDrive {
     fun screenLocked(): Boolean
     fun unlock()
     fun installApp(path: String)
+    fun installAppRemote(path: String)
     fun shell(cmd: String): String
     fun push(local: String, remote: String)
 }
