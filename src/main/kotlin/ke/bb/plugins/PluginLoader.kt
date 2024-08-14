@@ -4,31 +4,30 @@ import com.caoccao.javet.interop.NodeRuntime
 import com.caoccao.javet.interop.V8Host
 import com.caoccao.javet.interop.converters.JavetProxyConverter
 import com.caoccao.javet.values.reference.V8ValueObject
+import ke.bb.plugins.ke.bb.plugins.IPlugin
+import ke.bb.plugins.ke.bb.plugins.PluginType
 import java.io.File
+
 
 class PluginBridge(
     private val runtime: NodeRuntime,
     private val file: File
-) {
-    private var lastRunning = 0L
+) : IPlugin {
 
-    enum class PluginType {
-        CENTI, PEDE
-    }
 
     private var source = ""
-    private var name = ""
+    override var name = ""
 
     private var modifyAt = 0L
     lateinit var instance: V8ValueObject
 
-    lateinit var version: String
-    lateinit var description: String
-    lateinit var type: PluginType
-    var cooldown: Int = 60
-    var priority: Int = Int.MAX_VALUE
+    override lateinit var version: String
+    override lateinit var description: String
+    override lateinit var type: PluginType
+    override var cooldown: Int = 60
+    override var priority: Int = Int.MAX_VALUE
 
-    private fun load() {
+    fun load() {
         modifyAt = file.lastModified()
         source = file.readText()
 
@@ -52,7 +51,7 @@ class PluginBridge(
         load()
     }
 
-    fun reload() {
+    override fun update() {
         if (file.lastModified() > modifyAt) {
             load()
         }
@@ -63,25 +62,20 @@ class PluginBridge(
         return regex.find(source)?.groupValues?.get(1) ?: throw Exception("Plugin name not found")
     }
 
-    fun run(ctx: MutableMap<String, Any>, drive: IDrive) {
+    override fun run(ctx: MutableMap<String, Any>, drive: IDrive) {
         instance.invokeVoid("run", ctx, drive)
 
     }
 
-    fun activate(ctx: MutableMap<String, Any>, drive: IDrive): Boolean {
-        if (System.currentTimeMillis() / 1000 - lastRunning < cooldown) {
-            return false
-        }
-        return instance.invokeBoolean("activate", ctx, drive).apply {
-            lastRunning = System.currentTimeMillis() / 1000
-        }
+    override fun activate(ctx: MutableMap<String, Any>, drive: IDrive): Boolean {
+        return instance.invokeBoolean("activate", ctx, drive)
     }
 }
 
 class PluginExecutor(
     private val drives: Map<String, List<IDrive>>,
     private val syncDir: String,
-    private val type: PluginBridge.PluginType = PluginBridge.PluginType.CENTI
+    private val type: PluginType = PluginType.CENTI
 
 ) {
     private val pluginSourceDir: String = "$syncDir/scripts"
@@ -90,7 +84,7 @@ class PluginExecutor(
         converter = JavetProxyConverter()
     }
 
-    private fun load(): List<PluginBridge> {
+    private fun load(): List<IPlugin> {
         File(pluginSourceDir).run {
             return (if (isDirectory && exists()) {
                 (listFiles() ?: emptyArray()).map {
@@ -102,7 +96,7 @@ class PluginExecutor(
         }
     }
 
-    private val plugins = load()
+    private var plugins = load()
     private val contexts = drives.keys.associateWith {
         mutableMapOf<String, Any>().apply {
             put("globalData", mutableMapOf<String, Any>())
@@ -122,14 +116,36 @@ class PluginExecutor(
         ctx["screenLocked"] = drive.screenLocked()
     }
 
+    fun installPlugin(plugin: IPlugin) {
+        plugins = (plugins + (plugin)).sortedBy { it.priority }
+    }
+
+    fun pluginInfo(): List<Map<String, Any>> {
+        return plugins.map {
+            mapOf(
+                "version" to it.version,
+                "description" to it.description,
+                "type" to it.type,
+                "cooldown" to it.cooldown,
+                "priority" to it.priority
+            )
+        }
+    }
+
+    private val cooldowns = plugins.associateWith { 0L }.toMutableMap()
+
     fun run() {
         drives.forEach { (t, u) ->
             plugins.forEach {
-                it.reload()
+                it.update()
             }
             fillContext(contexts[t]!!, u.first())
             plugins.firstOrNull {
-                it.activate(contexts[t]!!, u.first())
+                val now = System.currentTimeMillis() / 1000
+                val last = cooldowns[it] ?: 0L
+                (now - last > it.cooldown && it.activate(contexts[t]!!, u.first())).apply {
+                    cooldowns[it] = now
+                }
             }?.run(contexts[t]!!, u.first())
         }
     }
