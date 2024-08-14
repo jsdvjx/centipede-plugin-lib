@@ -7,7 +7,6 @@ import com.caoccao.javet.values.reference.V8ValueObject
 import ke.bb.plugins.ke.bb.plugins.IPlugin
 import ke.bb.plugins.ke.bb.plugins.PluginType
 import java.io.File
-import java.util.logging.Logger
 
 
 class PluginBridge(
@@ -141,14 +140,15 @@ class PluginExecutor(
                 it.update()
             }
             fillContext(contexts[t]!!, u.first())
-            plugins.firstOrNull {
+            val plugin = plugins.firstOrNull {
                 val now = System.currentTimeMillis() / 1000
                 val last = cooldowns[it] ?: 0L
-                Logger.getGlobal().info("plugin ${it.name} cooldown ${now - last} last $last")
-                (now - last > it.cooldown && it.activate(contexts[t]!!, u.first())).apply {
-                    cooldowns[it] = now
-                }
-            }?.run(contexts[t]!!, u.first())
+                (now - last > it.cooldown && it.activate(contexts[t]!!, u.first()))
+            }
+            plugin?.run(contexts[t]!!, u.first())
+            if (plugin != null) {
+                cooldowns[plugin] = System.currentTimeMillis() / 1000
+            }
         }
     }
 }
