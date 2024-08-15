@@ -93,6 +93,7 @@ interface IDrive {
     fun ip(): String
     fun tcpIp(port: Int)
     fun id(): String
+    fun dumpNodes(): String
     fun queryNodes(): List<Node>
     fun queryNodes(text: String, justInclude: Boolean = true): List<Node>
     fun queryNode(text: String, justInclude: Boolean = true): Node?
