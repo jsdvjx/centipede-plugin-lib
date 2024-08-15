@@ -73,11 +73,15 @@ class PluginBridge(
 }
 
 class PluginExecutor(
-    private val drives: Map<String, List<IDrive>>,
+    private val drives: MutableMap<String, List<IDrive>>,
     private val syncDir: String,
     private val type: PluginType = PluginType.CENTI
 
 ) {
+    fun setDrives(drives: MutableMap<String, List<IDrive>>) {
+        this.drives.clear()
+        this.drives.putAll(drives)
+    }
     private val pluginSourceDir: String = "$syncDir/scripts"
     private val localPath: String = "$syncDir/apks"
     private val runtime = V8Host.getNodeInstance().createV8Runtime<NodeRuntime>().apply {
