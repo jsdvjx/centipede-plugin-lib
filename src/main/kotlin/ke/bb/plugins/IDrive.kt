@@ -35,7 +35,7 @@ data class Node(
 )
 
 
-class NodeQueryBuilder(private val nodes: List<Node>) {
+class NodeQueryBuilder() {
 
     private val conditions = mutableListOf<(Node) -> Boolean>()
 
@@ -60,8 +60,10 @@ class NodeQueryBuilder(private val nodes: List<Node>) {
     fun resourceId(value: String) = apply { conditions.add { it.resourceId == value } }
     fun condition(query: (Node) -> Boolean) = apply { conditions.add(query) }
 
-    fun build(): List<Node> {
-        return nodes.filter { node -> conditions.all { condition -> condition(node) } }
+    fun build(): (List<Node>) -> List<Node> {
+        return { list: List<Node> ->
+            list.filter { node -> conditions.all { it(node) } }
+        }
     }
 }
 
