@@ -22,7 +22,16 @@ data class Node(
     val checkable: Boolean,
     val checked: Boolean,
     val enabled: Boolean,
-    val packageName: String
+    val scrollable:Boolean,
+    val focusable:Boolean,
+    val focused:Boolean,
+    val selected:Boolean,
+    val password:Boolean,
+    val visibleToUser:Boolean,
+    val longClickable:Boolean,
+    val packageName: String,
+    val index: Int,
+    val resourceId:String,
 )
 data class ProcessInfo(
     val uid: Int,
