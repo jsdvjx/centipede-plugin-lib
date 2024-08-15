@@ -39,6 +39,7 @@ class NodeQueryBuilder() {
 
     private val conditions = mutableListOf<(Node) -> Boolean>()
 
+
     fun text(value: String) = apply { conditions.add { it.text.contains(value) } }
     fun description(value: String) = apply { conditions.add { it.description.contains(value) } }
 
@@ -81,8 +82,15 @@ data class ProcessInfo(
     }
 }
 
+enum class IDriveType {
+    USB, NETWORK
+}
+
 interface IDrive {
 
+    val type: IDriveType
+
+    fun switchType(): IDrive
     fun running(): List<ProcessInfo>
     fun startAppEntry(packageName: String): Boolean
     fun startAppActivity(activity: String): Boolean
