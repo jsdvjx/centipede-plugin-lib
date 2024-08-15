@@ -22,17 +22,49 @@ data class Node(
     val checkable: Boolean,
     val checked: Boolean,
     val enabled: Boolean,
-    val scrollable:Boolean,
-    val focusable:Boolean,
-    val focused:Boolean,
-    val selected:Boolean,
-    val password:Boolean,
-    val visibleToUser:Boolean,
-    val longClickable:Boolean,
+    val scrollable: Boolean,
+    val focusable: Boolean,
+    val focused: Boolean,
+    val selected: Boolean,
+    val password: Boolean,
+    val visibleToUser: Boolean,
+    val longClickable: Boolean,
     val packageName: String,
     val index: Int,
-    val resourceId:String,
+    val resourceId: String,
 )
+
+
+class NodeQueryBuilder(private val nodes: List<Node>) {
+
+    private val conditions = mutableListOf<(Node) -> Boolean>()
+
+    fun text(value: String) = apply { conditions.add { it.text.contains(value) } }
+    fun description(value: String) = apply { conditions.add { it.description.contains(value) } }
+
+    //    fun rect(value: Rect) = apply { conditions.add { it.rect == value } }
+    fun className(value: String) = apply { conditions.add { it.className == value } }
+    fun clickable(value: Boolean) = apply { conditions.add { it.clickable == value } }
+    fun checkable(value: Boolean) = apply { conditions.add { it.checkable == value } }
+    fun checked(value: Boolean) = apply { conditions.add { it.checked == value } }
+    fun enabled(value: Boolean) = apply { conditions.add { it.enabled == value } }
+    fun scrollable(value: Boolean) = apply { conditions.add { it.scrollable == value } }
+    fun focusable(value: Boolean) = apply { conditions.add { it.focusable == value } }
+    fun focused(value: Boolean) = apply { conditions.add { it.focused == value } }
+    fun selected(value: Boolean) = apply { conditions.add { it.selected == value } }
+    fun password(value: Boolean) = apply { conditions.add { it.password == value } }
+    fun visibleToUser(value: Boolean) = apply { conditions.add { it.visibleToUser == value } }
+    fun longClickable(value: Boolean) = apply { conditions.add { it.longClickable == value } }
+    fun packageName(value: String) = apply { conditions.add { it.packageName == value } }
+    fun index(value: Int) = apply { conditions.add { it.index == value } }
+    fun resourceId(value: String) = apply { conditions.add { it.resourceId == value } }
+    fun condition(query: (Node) -> Boolean) = apply { conditions.add(query) }
+
+    fun build(): List<Node> {
+        return nodes.filter { node -> conditions.all { condition -> condition(node) } }
+    }
+}
+
 data class ProcessInfo(
     val uid: Int,
     val pid: Int,
