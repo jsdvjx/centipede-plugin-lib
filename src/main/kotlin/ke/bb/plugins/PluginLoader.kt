@@ -7,6 +7,7 @@ import com.caoccao.javet.values.reference.V8ValueObject
 import ke.bb.plugins.ke.bb.plugins.IPlugin
 import ke.bb.plugins.ke.bb.plugins.PluginType
 import java.io.File
+import java.util.logging.Logger
 
 
 class PluginBridge(
@@ -78,6 +79,7 @@ class PluginExecutor(
     private val type: PluginType = PluginType.CENTI
 
 ) {
+    private val log = Logger.getLogger(this::class.simpleName)
     fun setDrives(drives: MutableMap<String, List<IDrive>>) {
         this.drives.clear()
         this.drives.putAll(drives)
@@ -112,6 +114,7 @@ class PluginExecutor(
             contexts[id] = initContext(drive)
         }
     }
+
     private fun initContext(instance: IDrive): MutableMap<String, Any> {
         return mutableMapOf<String, Any>().apply {
             put("globalData", mutableMapOf<String, Any>())
@@ -149,21 +152,29 @@ class PluginExecutor(
 
     private val cooldowns = plugins.associateWith { 0L }.toMutableMap()
 
+    private fun pick(list: List<IDrive>): IDrive? {
+        return list.firstOrNull {
+            it.ready()
+        }
+    }
+
     fun run() {
         drives.forEach { (t, u) ->
             plugins.forEach {
                 it.update()
             }
-            fillContext(contexts[t]!!, u.first())
-            val plugin = plugins.firstOrNull {
-                val now = System.currentTimeMillis() / 1000
-                val last = cooldowns[it] ?: 0L
-                (now - last > it.cooldown && it.activate(contexts[t]!!, u.first()))
-            }
-            plugin?.run(contexts[t]!!, u.first())
-            if (plugin != null) {
-                cooldowns[plugin] = System.currentTimeMillis() / 1000
-            }
+            pick(u)?.let { drive ->
+                fillContext(contexts[t]!!, drive)
+                val plugin = plugins.firstOrNull {
+                    val now = System.currentTimeMillis() / 1000
+                    val last = cooldowns[it] ?: 0L
+                    (now - last > it.cooldown && it.activate(contexts[t]!!, drive))
+                }
+                plugin?.run(contexts[t]!!, drive)
+                if (plugin != null) {
+                    cooldowns[plugin] = System.currentTimeMillis() / 1000
+                }
+            } ?: log.warning("No available drive for $t")
         }
     }
 }

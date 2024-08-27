@@ -90,6 +90,7 @@ interface IDrive {
 
     val type: IDriveType
 
+    fun ready(): Boolean
     fun switchType(): IDrive
     fun running(): List<ProcessInfo>
     fun startAppEntry(packageName: String): Boolean
