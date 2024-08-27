@@ -82,6 +82,7 @@ class PluginExecutor(
         this.drives.clear()
         this.drives.putAll(drives)
     }
+
     private val pluginSourceDir: String = "$syncDir/scripts"
     private val localPath: String = "$syncDir/apks"
     private val runtime = V8Host.getNodeInstance().createV8Runtime<NodeRuntime>().apply {
@@ -102,14 +103,18 @@ class PluginExecutor(
 
     private var plugins = load()
     private val contexts = drives.keys.associateWith {
-        mutableMapOf<String, Any>().apply {
+        initContext(drives[it]!!.first())
+    }
+
+    fun initContext(instance: IDrive): MutableMap<String, Any> {
+        return mutableMapOf<String, Any>().apply {
             put("globalData", mutableMapOf<String, Any>())
-            put("id", drives[it]!!.first().id())
-            put("ip", drives[it]!!.first().ip())
-            val (w, h) = drives[it]!!.first().screenSize()
+            put("id", instance.id())
+            put("ip", instance.ip())
+            val (w, h) = instance.screenSize()
             put("screenSize", mapOf("width" to w, "height" to h))
-            put("screenOn", drives[it]!!.first().screenOn())
-            put("screenLocked", drives[it]!!.first().screenLocked())
+            put("screenOn", instance.screenOn())
+            put("screenLocked", instance.screenLocked())
             put("localPath", localPath)
         }
     }
