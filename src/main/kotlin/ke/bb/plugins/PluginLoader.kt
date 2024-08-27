@@ -104,9 +104,15 @@ class PluginExecutor(
     private var plugins = load()
     private val contexts = drives.keys.associateWith {
         initContext(drives[it]!!.first())
-    }
+    }.toMutableMap()
 
-    fun initContext(instance: IDrive): MutableMap<String, Any> {
+    fun resetContext(drive: IDrive) {
+        val id = drive.id()
+        if (contexts[id] == null) {
+            contexts[id] = initContext(drive)
+        }
+    }
+    private fun initContext(instance: IDrive): MutableMap<String, Any> {
         return mutableMapOf<String, Any>().apply {
             put("globalData", mutableMapOf<String, Any>())
             put("id", instance.id())
