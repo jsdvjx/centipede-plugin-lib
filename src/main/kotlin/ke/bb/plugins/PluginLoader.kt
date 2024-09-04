@@ -108,6 +108,14 @@ class PluginExecutor(
         initContext(drives[it]!!.first())
     }.toMutableMap()
 
+    fun setContext(id: String, key: String, data: Any): Boolean {
+        if (contexts[id] == null) {
+            return false
+        }
+        contexts[id]?.set(key, data)
+        return true
+    }
+
     fun resetContext(drive: IDrive) {
         val id = drive.id()
         if (contexts[id] == null) {
