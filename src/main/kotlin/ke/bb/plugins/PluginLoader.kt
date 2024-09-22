@@ -87,20 +87,21 @@ class PluginExecutor(
 
     private val pluginSourceDir: String = "$syncDir/scripts"
     private val localPath: String = "$syncDir/apks"
-    private val runtime = V8Host.getNodeInstance().createV8Runtime<NodeRuntime>().apply {
-        converter = JavetProxyConverter()
-    }
+//    private val runtime = V8Host.getNodeInstance().createV8Runtime<NodeRuntime>().apply {
+//        converter = JavetProxyConverter()
+//    }
 
     private fun load(): List<IPlugin> {
-        File(pluginSourceDir).run {
-            return (if (isDirectory && exists()) {
-                (listFiles() ?: emptyArray()).map {
-                    PluginBridge(runtime, it)
-                }
-            } else emptyList())
-                .sortedBy { it.priority }
-                .filter { it.type == type }
-        }
+//        file(pluginsourcedir).run {
+//            return (if (isdirectory && exists()) {
+//                (listfiles() ?: emptyarray()).map {
+//                    pluginbridge(runtime, it)
+//                }
+//            } else emptylist())
+//                .sortedby { it.priority }
+//                .filter { it.type == type }
+//        }
+        return emptyList<IPlugin>()
     }
 
     private var plugins = load()
